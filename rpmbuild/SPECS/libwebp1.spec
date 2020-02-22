@@ -6,7 +6,7 @@ Summary:	A new image format for the Web
 Group:		Applications/Multimedia
 License:	BSD
 URL:		https://developers.google.com/speed/webp
-Source0:	libwebp-%{version}.tar.gz
+Source0:	http://downloads.webmproject.org/releases/webp/libwebp-%{version}.tar.gz
 
 %description
 WebP is a modern image format that provides superior lossless and lossy
