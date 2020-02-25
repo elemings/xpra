@@ -13,7 +13,7 @@ Version:		1.8.2
 Release:		1%{?dist}
 License:		BSD
 Group:			System Environment/Libraries
-Source0:		https://github.com/webmproject/libvpx/archive/%{name}-%{version}.tar.gz
+Source0:		https://github.com/webmproject/libvpx/archive/v%{version}.tar.gz
 Source1:		vpx_config.h
 # Thanks to debian.
 Source2:		libvpx.ver

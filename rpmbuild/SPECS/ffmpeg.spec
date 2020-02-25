@@ -58,7 +58,7 @@ make install DESTDIR=%{buildroot}
 %{_bindir}/*
 %{_libdir}/*.so.*
 %dir %{_datadir}/%{name}
-%{_datadir}/%{name}
+%{_datadir}/%{name}/*
 %{_mandir}/man1/*
 %{_mandir}/man3/*
 
@@ -66,11 +66,11 @@ make install DESTDIR=%{buildroot}
 %doc MAINTAINERS doc/APIchanges
 %defattr(-,root,root,-)
 %dir %{_includedir}/*
-%{_includedir}/*
+%{_includedir}/*/*
 %{_libdir}/*.a
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/*.pc
-
+%doc %{_docdir}/%{name}
 
 
 %changelog

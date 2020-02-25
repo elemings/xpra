@@ -1,4 +1,8 @@
+%if 0%{el7}
 Name:		libwebp1
+%else
+Name:		libwebp
+%endif
 Version:	1.0.3
 Release:	1%{?dist}
 Summary:	A new image format for the Web
