@@ -3,20 +3,20 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 3.0.5
+%define version 3.0.6
 
 %{!?__python2: %global __python2 python2}
 %{!?__python3: %define __python3 python3}
 %{!?python2_sitearch: %global python2_sitearch %(%{__python2} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(1))")}
 %{!?python3_sitearch: %global python3_sitearch %(%{__python3} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(1))")}
 
-%{!?revision_no: %define revision_no 1}
+%{!?revision_no: %define revision_no 2}
 
 %define CFLAGS -O2
-%define DEFAULT_BUILD_ARGS --with-Xdummy --without-enc_x265 --pkg-config-path=%{_libdir}/xpra/pkgconfig --rpath=%{_libdir}/xpra --without-cuda_rebuild
+%define DEFAULT_BUILD_ARGS --with-Xdummy --without-enc_x265 --rpath=%{_libdir}/xpra --without-cuda_rebuild
 
 %{!?update_firewall: %define update_firewall 1}
-%{!?run_tests: %define run_tests 1}
+%{!?run_tests: %define run_tests 0}
 %{!?with_python3: %define with_python3 1}
 %{!?with_selinux: %define with_selinux 1}
 #we only enable CUDA / NVENC with 64-bit builds:
@@ -50,20 +50,20 @@
 %define Suggests Requires
 %define Recommends Requires
 %define with_python3 0
-%if "%{?dist}"==".el7_0"
+  %if "%{?dist}"==".el7_0"
 echo CentOS 7.0 is no longer supported
 exit 1
-%endif
-%if "%{?dist}"==".el7_1"
+  %endif
+  %if "%{?dist}"==".el7_1"
 echo CentOS 7.1 is no longer supported
 exit 1
-%endif
+  %endif
 %endif
 
 
 Name:				xpra
 Version:			%{version}
-Release:			0%{?revision_no}xpra1%{?dist}
+Release:			%{?revision_no}%{?dist}
 Summary:			Xpra gives you "persistent remote applications" for X.
 Group:				Networking
 License:			GPL-2.0+ AND BSD-3-Clause AND LGPL-3.0+ AND MIT
@@ -111,7 +111,7 @@ BuildRequires:		libfakeXinerama
 %description common
 This package contains the files which are shared between all the xpra packages.
 
-%package common-client
+%package client
 Summary:			Common files for xpra client packages
 Group:				Networking
 BuildArch:			noarch
@@ -123,10 +123,10 @@ Requires(postun):	desktop-file-utils
 %if 0%{?el8}
 Recommends:			gnome-shell-extension-topicons-plus
 %endif
-%description common-client
+%description client
 This package contains the files which are shared between all the xpra client packages.
 
-%package common-server
+%package server
 Summary:			Common files for xpra server packages
 Group:				Networking
 BuildArch:			noarch
@@ -141,7 +141,6 @@ Requires(preun):	systemd-units
 Requires(postun):	systemd-units
 %{Recommends}:		which
 %{Recommends}:		libfakeXinerama
-%{Recommends}:		gtk2-immodule-xim
 %{Recommends}:		mesa-dri-drivers
 %if 0%{?fedora}%{?el8}
 #allows the server to use software opengl:
@@ -161,7 +160,7 @@ BuildRequires:		xorg-x11-drv-dummy
 %endif
 Requires(post):  	/usr/sbin/semodule, /usr/sbin/semanage, /sbin/restorecon, /sbin/fixfiles
 Requires(postun):	/usr/sbin/semodule, /usr/sbin/semanage, /sbin/restorecon, /sbin/fixfiles
-%description common-server
+%description server
 This package contains the files which are shared between all the xpra server packages.
 
 %package html5
@@ -176,14 +175,7 @@ BuildRequires:		uglify-js
 BuildRequires:		js-jquery
 Requires:			js-jquery
 %endif
-%if 0%{?el7}%{?el8}
-#don't depend on this package,
-#so we can also install on a pure RHEL distro:
-BuildRequires:		centos-logos
-%endif
-%if 0%{?el8}
-BuildRequires:		centos-backgrounds
-%endif
+
 %description html5
 This package contains Xpra's HTML5 client.
 
@@ -196,22 +188,20 @@ Requires:			python2-lz4
 Requires:			python2-rencode
 Requires:			python2-pillow
 %if 0%{?el7}
-Requires:			libvpx-xpra
+Requires:			libvpx18
 %else
 Requires:			libvpx
-Conflicts:			libvpx-xpra
-Obsoletes:          libvpx-xpra < 1.8
 %endif
-Requires:			x264-xpra
-Requires:			ffmpeg-xpra
+Requires:			x264
+Requires:			ffmpeg
 Requires:			turbojpeg
 Requires:			libyuv
 %if 0%{?fedora}%{?el8}
 Recommends:			python2-appindicator
 Requires:			python2-numpy
-%if 0%{?run_tests}
+  %if 0%{?run_tests}
 BuildRequires:		python2-numpy
-%endif
+  %endif
 Recommends:			python2-paramiko
 Recommends:			python2-dns
 #Recommends:			python2-lzo
@@ -225,7 +215,7 @@ Recommends:         python2-ldap
 Recommends:         python2-ldap3
 Recommends:			python2-dbus
 %endif
-%{Recommends}:		python2-netifaces
+%{Recommends}:		python-netifaces
 %{Suggests}:		python2-cryptography
 BuildRequires:		pkgconfig
 BuildRequires:		gcc
@@ -239,12 +229,12 @@ BuildRequires:		python2-setuptools
 %endif
 %if 0%{?el7}
 Requires:			numpy
-%if 0%{?run_tests}
+  %if 0%{?run_tests}
 BuildRequires:		numpy
-%endif
+  %endif
 Requires:			dbus-python
-Requires:			libwebp-xpra
-BuildRequires:		libwebp-xpra-devel
+Requires:			libwebp1
+BuildRequires:		libwebp1-devel
 BuildRequires:		python-setuptools
 %endif
 BuildRequires:		libxkbfile-devel
@@ -258,13 +248,17 @@ BuildRequires:		pygtk2-devel
 BuildRequires:		pygobject2-devel
 BuildRequires:		libyuv-devel
 BuildRequires:		turbojpeg-devel
-BuildRequires:		x264-xpra-devel
-BuildRequires:		ffmpeg-xpra-devel
+BuildRequires:		x264-devel
+BuildRequires:		ffmpeg-devel
+%if 0%{?with_cuda}
+BuildRequires:		nvenc
+BuildRequires:		nvfbc
+%endif
 %if 0%{?run_tests}
 BuildRequires:		python2-rencode
-%if 0%{?fedora}
+  %if 0%{?fedora}
 BuildRequires:		python2-cryptography
-%endif
+  %endif
 %endif
 %description -n python2-xpra
 This package contains the python2 common build of xpra.
@@ -299,7 +293,7 @@ This package contains audio support for python2 builds of xpra.
 Summary:			python2 build of xpra client
 Group:				Networking
 Conflicts:			xpra < 2.1
-Requires:			xpra-common-client >= %{version}-%{release}
+Requires:			xpra-client >= %{version}-%{release}
 Requires:			python2-xpra = %{version}-%{release}
 Requires:			pygtk2
 Requires:			python2-pyopengl
@@ -312,12 +306,12 @@ Recommends:         python2-pyxdg
 Recommends:			python2-xpra-audio
 Recommends:			python2-cups
 Suggests:			sshpass
-%if 0%{?run_tests}
-%if 0%{?fedora}
+  %if 0%{?run_tests}
+    %if 0%{?fedora}
 BuildRequires:		xclip
 BuildRequires:		python2-pyxdg
-%endif
-%endif
+    %endif
+  %endif
 %endif
 %if 0%{?el7}
 Requires:			python-cups
@@ -328,11 +322,12 @@ This package contains the python2 xpra client.
 %package -n python2-xpra-server
 Summary:			python2 build of xpra server
 Group:				Networking
-Requires:			xpra-common-server >= %{version}-%{release}
+Requires:			xpra-server >= %{version}-%{release}
 Requires:			python2-xpra = %{version}-%{release}
 Requires:			pygtk2
 %{Recommends}:		cups-filters
 %{Recommends}:		dbus-x11
+%{Recommends}:		gtk2-immodule-xim
 %if %{with_cuda}
 %{Recommends}:		python2-pycuda
 %{Recommends}:		python2-pynvml
@@ -365,12 +360,14 @@ Requires:			python3-pillow
 Requires:			python3-rencode
 Requires:			python3-numpy
 Requires:			libyuv
+%if 0%{?el7}
+Requires:			libvpx18
+%else
 Requires:			libvpx
+%endif
 Requires:			turbojpeg
-Conflicts:			libvpx-xpra
-Obsoletes:          libvpx-xpra < 1.8
-Requires:			x264-xpra
-Requires:			ffmpeg-xpra
+Requires:			x264
+Requires:			ffmpeg
 Requires:			python3-cryptography
 Requires:			python3-gobject
 Recommends:			python3-inotify
@@ -385,7 +382,7 @@ Recommends:         python3-gssapi
 Recommends:         python3-ldap
 Recommends:         python3-ldap3
 Recommends:         python3-brotli
-Recommends:         python3-cpuinfo
+#Suggests:           python3-cpuinfo
 Requires:			libwebp
 BuildRequires:		libwebp-devel
 BuildRequires:		libyuv-devel
@@ -398,15 +395,15 @@ BuildRequires:		python3-Cython
 BuildRequires:		python3-gobject
 BuildRequires:		pygobject3-devel
 BuildRequires:		python3-cairo-devel
-BuildRequires:		x264-xpra-devel
-BuildRequires:		ffmpeg-xpra-devel
+BuildRequires:		x264-devel
+BuildRequires:		ffmpeg-devel
 BuildRequires:		gtk3-devel
 BuildRequires:		gobject-introspection-devel
-%if 0%{?run_tests}
+  %if 0%{?run_tests}
 BuildRequires:		python3-cryptography
 BuildRequires:		python3-rencode
 BuildRequires:		python3-numpy
-%endif
+  %endif
 %description -n python3-xpra
 This package contains the python3 build of xpra.
 
@@ -423,20 +420,20 @@ Recommends:			gstreamer1-plugins-ugly
 Recommends:			gstreamer1-plugins-ugly-free
 Recommends:			pulseaudio
 Recommends:			pulseaudio-utils
-%if 0%{?run_tests}
+  %if 0%{?run_tests}
 Requires:			python3-gstreamer1
 BuildRequires:		gstreamer1
 BuildRequires:		gstreamer1-plugins-good
 BuildRequires:		pulseaudio
 BuildRequires:		pulseaudio-utils
-%endif
+  %endif
 %description -n python3-xpra-audio
 This package contains audio support for python2 builds of xpra.
 
 %package -n python3-xpra-client
 Summary:			python3 build of xpra client
 Group:				Networking
-Requires:			xpra-common-client = %{version}-%{release}
+Requires:			xpra-client = %{version}-%{release}
 Requires:			python3-xpra = %{version}-%{release}
 BuildRequires:		python3-pyxdg
 BuildRequires:		python3-cups
@@ -446,25 +443,25 @@ Recommends:			python3-pyopengl
 Recommends:			python3-pyu2f
 Recommends:			python3-xdg
 #without this, the system tray is unusable!
-%if 0%{?el8}
+  %if 0%{?el8}
 Recommends:			gnome-shell-extension-topicons-plus
-%endif
-%if 0%{?fedora}
+  %endif
+  %if 0%{?fedora}
 Recommends:			libappindicator-gtk3
-%endif
+  %endif
 Suggests:			sshpass
-%if 0%{?run_tests}
-%if 0%{?fedora}
+  %if 0%{?run_tests}
+    %if 0%{?fedora}
 BuildRequires:		xclip
-%endif
-%endif
+    %endif
+  %endif
 %description -n python3-xpra-client
 This package contains the python3 xpra client.
 
 %package -n python3-xpra-server
 Summary:			python3 build of xpra server
 Group:				Networking
-Requires:			xpra-common-server = %{version}-%{release}
+Requires:			xpra-server = %{version}-%{release}
 Requires:			python3-xpra = %{version}-%{release}
 Recommends:			cups-filters
 Recommends:			cups-pdf
@@ -472,10 +469,10 @@ Recommends:			python3-cups
 Recommends:			dbus-x11
 Recommends:			gtk3-immodule-xim
 Recommends:			python3-setproctitle
-%if %{with_cuda}
+  %if %{with_cuda}
 Recommends:			python3-pynvml
 Recommends:			python3-pycuda
-%endif
+  %endif
 BuildRequires:		gcc
 BuildRequires:		gcc-c++
 BuildRequires:		python3-Cython
@@ -553,6 +550,8 @@ pushd xpra-%{version}-python2
 find %{buildroot}%{python2_sitearch}/xpra -name '*.so' -exec chmod 0755 {} \;
 #remove the tests, not meant to be installed in the first place
 rm -fr ${RPM_BUILD_ROOT}/%{python2_sitearch}/unittests
+#silence warnings in xpra commands
+mkdir -p $RPM_BUILD_ROOT/run/xpra
 %if 0%{?with_selinux}
 for mod in %{selinux_modules}
 do
@@ -606,7 +605,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/xpra/cuda
 %endif
 %{_datadir}/man/man1/xpra*
-%{_datadir}/appdata/xpra.appdata.xml
+%{_datadir}/metainfo/xpra.appdata.xml
 %{_datadir}/icons/xpra.png
 %{_datadir}/icons/xpra-mdns.png
 %{_datadir}/icons/xpra-shadow.png
@@ -621,7 +620,7 @@ rm -rf $RPM_BUILD_ROOT
 %config %{_sysconfdir}/xpra/conf.d/30_picture.conf
 %config %{_sysconfdir}/xpra/conf.d/35_webcam.conf
 
-%files common-client
+%files client
 %config %{_sysconfdir}/xpra/conf.d/40_client.conf
 %config %{_sysconfdir}/xpra/conf.d/42_client_keyboard.conf
 %{_datadir}/applications/xpra-launcher.desktop
@@ -629,20 +628,21 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/applications/xpra.desktop
 %{_datadir}/mime/packages/application-x-xpraconfig.xml
 
-%files common-server
+%files server
 %{_sysconfdir}/dbus-1/system.d/xpra.conf
 %{_bindir}/xpra_udev_product_version
 /lib/systemd/system/xpra.service
 /lib/systemd/system/xpra.socket
+%attr(0775,root,xpra) %dir %{_rundir}/xpra
 %{_prefix}/lib/cups/backend/xpraforwarder
 %{_prefix}/lib/udev/rules.d/71-xpra-virtual-pointer.rules
 %{_datadir}/xpra/content-type
 %{_datadir}/xpra/content-categories
 %{_datadir}/applications/xpra-shadow.desktop
-%{_libexecdir}/xpra/xdg-open
-%{_libexecdir}/xpra/gnome-open
-%{_libexecdir}/xpra/gvfs-open
-%{_libexecdir}/xpra/auth_dialog
+%{_prefix}/lib/xpra/xdg-open
+%{_prefix}/lib/xpra/gnome-open
+%{_prefix}/lib/xpra/gvfs-open
+%{_prefix}/lib/xpra/auth_dialog
 %config(noreplace) %{_sysconfdir}/sysconfig/xpra
 %config %{_prefix}/lib/tmpfiles.d/xpra.conf
 %config %{_prefix}/lib/sysusers.d/xpra.conf
@@ -731,23 +731,24 @@ export XPRA_TEST_DEBUG=1
 
 %if 0%{?run_tests}
 pushd xpra-%{version}-python2/unittests
-%if 0%{?el8}
+mkdir www # avoids warning/error messages in test results
+  %if 0%{?el8}
 #we don't have python2-cryptography on centos8 (yet?):
 rm -fr unit/net/crypto_test.py unit/client/mixins/webcam_test.py
-%endif
+  %endif
 PYTHONPATH="%{buildroot}%{python2_sitearch}:." PATH="`pwd`/../scripts/:$PATH" XPRA_COMMAND="%{__python2} `pwd`/../scripts/xpra" XPRA_CONF_DIR="`pwd`/../etc/xpra" %{__python2} ./unit/run.py
 popd
 
-%if 0%{?with_python3}
+  %if 0%{?with_python3}
 pushd xpra-%{version}-python3/unittests
 rm -fr unit/client unit/server/*server*py unit/client/mixins/webcam_test.py
 PYTHONPATH="%{buildroot}%{python3_sitearch}:." PATH="%{__python3} `pwd`/../scripts/:$PATH" XPRA_COMMAND="`pwd`/../scripts/xpra" XPRA_CONF_DIR="`pwd`/../etc/xpra" %{__python3} ./unit/run.py
 popd
-%endif
+  %endif
 %endif
 
 
-%post common-server
+%pre server
 %if 0%{?fedora}%{?el8}
 %tmpfiles_create xpra.conf
 #fedora can use sysusers.d instead
@@ -755,6 +756,8 @@ popd
 %else
 getent group xpra > /dev/null || groupadd -r xpra
 %endif
+
+%post server
 if [ ! -e "/etc/xpra/ssl-cert.pem" ]; then
 	umask=`umask`
 	umask 077
@@ -810,12 +813,12 @@ fi
 #reload dbus to get our new policy:
 systemctl reload dbus
 
-%post common-client
+%post client
 /usr/bin/update-mime-database &> /dev/null || :
 /usr/bin/update-desktop-database &> /dev/null || :
 /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
 
-%preun common-server
+%preun server
 if [ $1 -eq 0 ] ; then
 	/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 	/bin/systemctl disable xpra.service > /dev/null 2>&1 || :
@@ -824,7 +827,7 @@ if [ $1 -eq 0 ] ; then
 	/bin/systemctl stop xpra.socket > /dev/null 2>&1 || :
 fi
 
-%postun common-server
+%postun server
 /bin/systemctl daemon-reload >/dev/null 2>&1 || :
 %if 0%{update_firewall}
 if [ $1 -eq 0 ]; then
@@ -854,7 +857,7 @@ if [ $1 -eq 0 ] ; then
 fi
 %endif
 
-%postun common-client
+%postun client
 /usr/bin/update-mime-database &> /dev/null || :
 /usr/bin/update-desktop-database &> /dev/null || :
 if [ $1 -eq 0 ] ; then
@@ -867,6 +870,57 @@ fi
 
 
 %changelog
+* Tue Feb 11 2020 Eric Lemings <eric.lemings@ngc.com> 3.0.6-2
+- remove CentOS dependencies for RHEL platforms
+- fix install paths of xdg-open and related scripts
+- indent nested macros for readability
+- PKG_CONFIG_PATH no longer needed
+- use python-netifaces 0.10.4 (RedHat) instead of python2-netifaces 0.10.9 (Xpra)
+- simplify value of Release macro
+- reduce "common-server" and "common-client" to just "server" and "client"
+- update names of dependencies
+- define run_tests as 0 by default
+
+* Sat Feb 08 2020 Antoine Martin <antoine@xpra.org> 3.0.6-1xpra2
+- fix 'User' not honoured in ssh_config
+- fix X11 server initiate move-resize
+- prettier format for new connection information
+- Debian packaging: prefer python3 installations
+
+* Wed Feb 05 2020 Antoine Martin <antoine@xpra.org> 3.0.6-1xpra1
+- fix UDP with Python3
+- fix key mapping issues with non-X11 clients and non-US layouts
+- fix notification logging errors during shutdown
+- fix window stacking order with html5 client and override redirect windows
+- fix png/P and png/L decoding
+- fix very slow startup on Debian due to missing libfakeXinerama
+- fix display scaling notification warning
+- fix errors generating the tray title string
+- fix missing webp modules in 'clean' build target
+- fix some special characters with HTML5 client
+- fix initiate-moveresize with multiple clients
+- fix keyboard layout detection with MS Windows 10 clients
+- fix control commands argument error handling
+- fix unit tests
+- fix window repaint issues: system tray, Python 2 non-opengl window spinners
+- fix server errors during client connection cleanup
+- fix spacebar and other characters with tablet input devices (ie: mobile browsers)
+- fix unhelpful backtraces when client application windows are lost
+- fix MS Windows packaging workarounds for TK
+- fix for crashes on X11 displays lacking RandR support
+- fix handling of non 24/32-bit png window icons
+- man page connection string fixes
+- disable cpuinfo module - known to cause problems on various platforms
+- ignore error and continue when loading version information from invalid builds
+- remove executable file permissions on files uploaded to the server
+- blacklist 'Intel(R) UHD Graphics 620'
+- use correct location for appdata.xml
+- use Debian location for systemd service config file
+- ensure emacs, gvim and xxdiff always use 'text' mode
+- re-enable pulseaudio memfd (was wrongly disabled in v3.0.0)
+- remove remnants of GTK2 dependencies from non-GTK2 components
+- add missing entry to path information tool
+
 * Tue Jan 07 2020 Antoine Martin <antoine@xpra.org> 3.0.5-1xpra1
 - fix missing undecorated opengl windows on win32 with GTK3 (correct fix)
 - fix fake Xinerama errors with unicode monitor names
