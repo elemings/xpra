@@ -1,6 +1,6 @@
 Name:           lz4
 Version:        1.8.3
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Extremely fast compression algorithm
 
 License:        GPLv2+ and BSD
@@ -54,8 +54,8 @@ chmod +x ./configure
 %if 0%{?el8}
 %ldconfig_scriptlets libs
 %else
-%post -p /sbin/ldconfig
-%postun -p /sbin/ldconfig
+%post libs -p /sbin/ldconfig
+%postun libs -p /sbin/ldconfig
 %endif
 
 
@@ -85,6 +85,9 @@ chmod +x ./configure
 %{_libdir}/liblz4.a
 
 %changelog
+* Sat Feb 22 2020 Eric Lemings <eric.lemings@ngc.com> - 1.8.3-2
+- Fix error in ldconfig scripts
+
 * Sat Feb 22 2020 Eric Lemings <eric.lemings@ngc.com> - 1.8.3-1
 - Update to 1.8.3
 - Backward compatibility for el7 platforms
