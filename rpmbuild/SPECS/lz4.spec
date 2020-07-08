@@ -7,6 +7,7 @@ License:        GPLv2+ and BSD
 URL:            https://lz4.github.io/lz4/
 Source0:        https://github.com/lz4/lz4/archive/v%{version}.tar.gz
 Obsoletes:      %{name} < 1.7.5-3
+Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
 
 %description
 LZ4 is an extremely fast loss-less compression algorithm, providing compression
